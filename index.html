@@ -3,103 +3,718 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fruit & Vegetable Identifier</title>
+  <title>ProduceAI — Smart Fruit & Vegetable Classifier</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
   <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 45%, #f8fafc 100%);
+      --surface: #ffffff;
+      --surface-muted: #f8fafc;
+      --border: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --accent: #16a34a;
+      --accent-hover: #15803d;
+      --accent-soft: #dcfce7;
+      --accent-text: #166534;
+      --secondary-btn: #0f172a;
+      --secondary-btn-hover: #1e293b;
+      --warning-bg: #fef3c7;
+      --warning-text: #92400e;
+      --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+      --radius-xl: 24px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 28px 16px 48px;
+      gap: 24px;
+    }
+
+    /* Main Classifier Card */
+    .app-shell {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+
+    .app-header {
+      padding: 22px 26px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .brand-title h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .brand-title p {
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 11px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      background: var(--surface-muted);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    .status-pill.live {
+      background: var(--accent-soft);
+      color: var(--accent-text);
+      border-color: #bbf7d0;
+    }
+
+    .status-pill.live .status-dot {
+      background: var(--accent);
+      box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+      animation: pulse 1.6s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .app-body {
+      padding: 24px 26px 26px;
+    }
+
+    /* Viewport Frame */
+    .viewport {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 1 / 1;
+      max-height: 330px;
+      background: var(--surface-muted);
+      border: 2px dashed #cbd5e1;
+      border-radius: var(--radius-lg);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100vh;
-      margin: 0;
-      background: #f4f6f8;
-      color: #1f2328;
+      overflow: hidden;
+      transition: border-color 0.25s ease, background 0.25s ease;
     }
-    .card {
-      background: white;
-      padding: 28px;
-      border-radius: 16px;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+
+    .viewport.active {
+      border-style: solid;
+      border-color: var(--accent);
+      background: #0f172a;
+    }
+
+    .viewport canvas,
+    .viewport img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .placeholder-state {
       text-align: center;
-      max-width: 400px;
-      width: 90%;
+      padding: 24px;
+      color: var(--text-secondary);
     }
-    .controls {
+
+    .placeholder-icon {
+      width: 52px;
+      height: 52px;
+      margin: 0 auto 12px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 1px solid var(--border);
       display: flex;
-      gap: 10px;
+      align-items: center;
       justify-content: center;
-      margin-bottom: 16px;
+      color: var(--text-muted);
     }
-    button, .upload-label {
-      padding: 10px 18px;
-      font-size: 0.95rem;
+
+    .placeholder-state p {
+      font-size: 0.88rem;
       font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .placeholder-state span {
+      display: block;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    /* Multi-Camera Picker Overlay & Bar */
+    .camera-bar {
+      margin-top: 14px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 8px 12px;
+    }
+
+    .camera-bar.visible {
+      display: flex;
+    }
+
+    .camera-bar label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .camera-select {
+      flex: 1;
+      min-width: 0;
+      font-family: inherit;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 7px 10px;
+      cursor: pointer;
+      outline: none;
+    }
+
+    .camera-select:focus {
+      border-color: var(--accent);
+    }
+
+    .cycle-cam-btn {
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: var(--text-primary);
+      border-radius: 8px;
+      padding: 7px 10px;
+      font-family: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .cycle-cam-btn:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent-text);
+    }
+
+    /* Single Result Banner */
+    .result-panel {
+      margin-top: 16px;
+      padding: 18px 20px;
+      border-radius: var(--radius-lg);
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      text-align: center;
+      transition: all 0.25s ease;
+    }
+
+    .result-panel.detected {
+      background: var(--accent-soft);
+      border-color: #86efac;
+    }
+
+    .result-panel.uncertain {
+      background: var(--warning-bg);
+      border-color: #fde68a;
+    }
+
+    .result-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .result-panel.detected .result-label {
+      color: var(--accent-text);
+    }
+
+    .result-panel.uncertain .result-label {
+      color: var(--warning-text);
+    }
+
+    .result-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      line-height: 1.2;
+      word-break: break-word;
+    }
+
+    .result-panel.detected .result-value {
+      color: var(--accent-text);
+    }
+
+    .result-panel.uncertain .result-value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--warning-text);
+    }
+
+    /* Controls */
+    .controls {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 13px 16px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 700;
       cursor: pointer;
       border: none;
-      border-radius: 8px;
-      background: #0969da;
-      color: white;
-      transition: background 0.2s;
+      transition: transform 0.12s ease, background 0.2s ease, box-shadow 0.2s ease;
     }
-    button:hover, .upload-label:hover {
-      background: #0550ae;
+
+    .btn:active {
+      transform: scale(0.98);
     }
-    button:disabled {
-      background: #8c959f;
+
+    .btn-primary {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-primary.stop-mode {
+      background: #dc2626;
+      box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+    }
+
+    .btn-primary.stop-mode:hover {
+      background: #b91c1c;
+    }
+
+    .btn-secondary {
+      background: var(--secondary-btn);
+      color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+      background: var(--secondary-btn-hover);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
       cursor: not-allowed;
+      transform: none;
     }
+
     input[type="file"] {
       display: none;
     }
-    #media-container canvas, #media-container img {
-      width: 300px;
-      height: 300px;
-      object-fit: cover;
-      border-radius: 12px;
-      border: 2px solid #d0d7de;
-      margin-top: 8px;
+
+    .spinner {
+      width: 16px;
+      height: 16px;
+      border: 2.5px solid rgba(255, 255, 255, 0.35);
+      border-top-color: #ffffff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
     }
-    #result {
-      margin-top: 20px;
-      font-size: 2rem;
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Project Showcase Section */
+    .about-card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      padding: 26px;
+    }
+
+    .theme-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent-soft);
+      color: var(--accent-text);
+      font-size: 0.72rem;
       font-weight: 700;
-      color: #1a7f37;
-      min-height: 2.4rem;
+      padding: 5px 12px;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+      margin-bottom: 12px;
+    }
+
+    .about-card h2 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+
+    .about-lead {
+      font-size: 0.88rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px;
+      border-radius: var(--radius-md);
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+    }
+
+    .feature-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-text h3 {
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 3px;
+    }
+
+    .feature-text p {
+      font-size: 0.79rem;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    .impact-box {
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      border: 1px solid #bbf7d0;
+    }
+
+    .impact-box h4 {
+      font-size: 0.76rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-text);
+      margin-bottom: 5px;
+    }
+
+    .impact-box p {
+      font-size: 0.81rem;
+      line-height: 1.55;
+      color: #14532d;
+    }
+
+    .app-footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      padding-top: 4px;
     }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>Produce Identifier</h2>
+  <!-- Interactive Classifier Card -->
+  <main class="app-shell">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+          </svg>
+        </div>
+        <div class="brand-title">
+          <h1>ProduceAI</h1>
+          <p>Smart Fruit &amp; Vegetable Classifier</p>
+        </div>
+      </div>
 
-    <div class="controls">
-      <button id="webcam-btn" onclick="startWebcam()">Use Webcam</button>
-      <label class="upload-label" for="image-upload">Upload Photo</label>
-      <input type="file" id="image-upload" accept="image/*" onchange="handleImageUpload(event)" />
+      <div id="status-pill" class="status-pill">
+        <span class="status-dot"></span>
+        <span id="status-text">Idle</span>
+      </div>
+    </header>
+
+    <section class="app-body">
+      <div id="viewport" class="viewport">
+        <div id="media-slot" style="width:100%; height:100%; display:flex; align-items:center; justify-content:center;">
+          <div class="placeholder-state">
+            <div class="placeholder-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
+              </svg>
+            </div>
+            <p>Ready to Identify Produce</p>
+            <span>Start live camera or upload a photo below</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Camera Selector Bar (Automatically shows when multiple cameras are detected) -->
+      <div id="camera-bar" class="camera-bar">
+        <label for="camera-select">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+            <circle cx="12" cy="13" r="3"/>
+          </svg>
+          Camera:
+        </label>
+        <select id="camera-select" class="camera-select" onchange="onCameraSelected()"></select>
+        <button type="button" class="cycle-cam-btn" onclick="cycleNextCamera()" title="Switch to Next Camera">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/>
+            <path d="M21 3v5h-5"/>
+            <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/>
+            <path d="M8 16H3v5"/>
+          </svg>
+          Switch
+        </button>
+      </div>
+
+      <!-- Single Output Display -->
+      <div id="result-panel" class="result-panel" aria-live="polite">
+        <div id="result-label" class="result-label">Identified Produce</div>
+        <div id="result-value" class="result-value">Ready to Scan</div>
+      </div>
+
+      <div class="controls">
+        <button id="webcam-btn" class="btn btn-primary" onclick="toggleWebcam()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m22 8-6 4 6 4V8Z"/>
+            <rect width="14" height="12" x="2" y="6" rx="2" ry="2"/>
+          </svg>
+          <span id="webcam-btn-text">Live Camera</span>
+        </button>
+
+        <label class="btn btn-secondary" for="image-upload">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" x2="12" y1="3" y2="15"/>
+          </svg>
+          <span>Upload Photo</span>
+        </label>
+        <input type="file" id="image-upload" accept="image/*" onchange="handleImageUpload(event)" />
+      </div>
+    </section>
+  </main>
+
+  <!-- Project Overview & Exhibition Showcase Card -->
+  <section class="about-card" aria-labelledby="project-overview-heading">
+    <div class="theme-badge">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+      </svg>
+      AI for Better Life
     </div>
 
-    <div id="media-container"></div>
+    <h2 id="project-overview-heading">About ProduceAI</h2>
+    <p class="about-lead">
+      <strong>ProduceAI</strong> brings instant, private computer vision directly to any web browser. Powered by a custom-trained Convolutional Neural Network and <strong>TensorFlow.js</strong>, it identifies fresh fruits and vegetables in real time and delivers a single, decisive answer without overwhelming users with complex probability charts.
+    </p>
 
-    <!-- Single output display -->
-    <div id="result">Ready</div>
-  </div>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h3>Single-Decision Output Engine</h3>
+          <p>Filters raw neural network probabilities through a 75% confidence threshold to display one clear, unambiguous name.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h3>100% On-Device Edge AI</h3>
+          <p>All camera frames are processed locally inside your browser—zero images are uploaded to external servers, ensuring speed and privacy.</p>
+        </div>
+      </div>
+
+      <div class="feature-item">
+        <div class="feature-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+            <path d="M12 18h.01"/>
+          </svg>
+        </div>
+        <div class="feature-text">
+          <h3>Multi-Camera &amp; Cross-Platform</h3>
+          <p>Automatically detects all connected webcams, rear lenses, and front cameras with instant one-tap switching.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="impact-box">
+      <h4>Real-World Impact</h4>
+      <p>
+        Designed to accelerate smart retail self-checkouts, streamline post-harvest produce sorting, assist visually impaired shoppers, and serve as an interactive nutrition learning tool.
+      </p>
+    </div>
+  </section>
+
+  <footer class="app-footer">
+    Built with TensorFlow.js &amp; Teachable Machine &bull; On-Device Computer Vision
+  </footer>
 
   <script>
     const MODEL_BASE_URL = "https://teachablemachine.withgoogle.com/models/o5EEotCaj/";
-    const CONFIDENCE_THRESHOLD = 0.75; // Minimum 75% certainty to show a name
+    const CONFIDENCE_THRESHOLD = 0.75;
 
-    let model;
-    let webcam;
+    let model = null;
+    let webcam = null;
     let isWebcamRunning = false;
+    let availableCameras = [];
+    let selectedDeviceId = "";
 
-    // 1. Load the model once when needed
+    const statusPill = document.getElementById("status-pill");
+    const statusText = document.getElementById("status-text");
+    const viewport = document.getElementById("viewport");
+    const mediaSlot = document.getElementById("media-slot");
+    const cameraBar = document.getElementById("camera-bar");
+    const cameraSelect = document.getElementById("camera-select");
+    const resultPanel = document.getElementById("result-panel");
+    const resultLabel = document.getElementById("result-label");
+    const resultValue = document.getElementById("result-value");
+    const webcamBtn = document.getElementById("webcam-btn");
+    const webcamBtnText = document.getElementById("webcam-btn-text");
+
+    function setStatus(state, text) {
+      statusPill.className = "status-pill" + (state === "live" ? " live" : "");
+      statusText.innerText = text;
+    }
+
+    function setResultState(mode, label, value) {
+      resultPanel.className = "result-panel" + (mode ? " " + mode : "");
+      resultLabel.innerText = label;
+      resultValue.innerText = value;
+    }
+
     async function loadModel() {
       if (!model) {
-        document.getElementById("result").innerText = "Loading model...";
+        setStatus("loading", "Loading AI...");
+        setResultState("", "System Status", "Loading AI Model...");
         model = await tmImage.load(
           MODEL_BASE_URL + "model.json",
           MODEL_BASE_URL + "metadata.json"
@@ -107,72 +722,190 @@
       }
     }
 
-    // 2. Helper that extracts ONLY the single top prediction
+    async function refreshCameraList(activeDeviceId = "") {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      availableCameras = devices.filter(device => device.kind === "videoinput");
+
+      cameraSelect.innerHTML = "";
+      availableCameras.forEach((cam, index) => {
+        const option = document.createElement("option");
+        option.value = cam.deviceId;
+        option.text = cam.label || `Camera ${index + 1}`;
+        cameraSelect.appendChild(option);
+      });
+
+      if (activeDeviceId && availableCameras.some(c => c.deviceId === activeDeviceId)) {
+        selectedDeviceId = activeDeviceId;
+      } else if (!selectedDeviceId && availableCameras.length > 0) {
+        // Prefer rear/back camera on initial load if available
+        const rearCam = availableCameras.find(c => /back|rear|environment/i.test(c.label));
+        selectedDeviceId = rearCam ? rearCam.deviceId : availableCameras[0].deviceId;
+      }
+
+      if (selectedDeviceId) {
+        cameraSelect.value = selectedDeviceId;
+      }
+
+      // Show camera selector bar whenever 2 or more cameras exist
+      if (availableCameras.length > 1) {
+        cameraBar.classList.add("visible");
+      } else {
+        cameraBar.classList.remove("visible");
+      }
+    }
+
+    function isFrontCamera(deviceId) {
+      const cam = availableCameras.find(c => c.deviceId === deviceId);
+      if (!cam || !cam.label) return false;
+      return /front|user|facetime|integrated|webcam/i.test(cam.label) && !/back|rear|environment/i.test(cam.label);
+    }
+
     async function classifyElement(htmlElement) {
       const predictions = await model.predict(htmlElement);
 
-      // Pick the single class with the highest probability
       const topResult = predictions.reduce((best, current) =>
         current.probability > best.probability ? current : best
       );
 
-      const resultEl = document.getElementById("result");
       if (topResult.probability >= CONFIDENCE_THRESHOLD) {
-        resultEl.innerText = topResult.className;
+        setResultState("detected", "Identified Produce", topResult.className);
       } else {
-        resultEl.innerText = "Not sure — try closer";
+        setResultState("uncertain", "Low Confidence", "Move closer or adjust lighting");
       }
     }
 
-    // 3. Webcam mode
-    async function startWebcam() {
-      const btn = document.getElementById("webcam-btn");
-      btn.disabled = true;
+    async function toggleWebcam() {
+      if (isWebcamRunning) {
+        await stopWebcam();
+      } else {
+        await startWebcam();
+      }
+    }
 
-      await loadModel();
+    async function startWebcam(requestedDeviceId = selectedDeviceId) {
+      webcamBtn.disabled = true;
+      webcamBtnText.innerHTML = '<span class="spinner"></span> Starting...';
 
-      const container = document.getElementById("media-container");
-      container.innerHTML = "";
+      try {
+        await loadModel();
 
-      webcam = new tmImage.Webcam(300, 300, true);
-      await webcam.setup();
-      await webcam.play();
+        // Populate camera list before starting if not yet loaded
+        if (availableCameras.length === 0) {
+          await refreshCameraList();
+          requestedDeviceId = selectedDeviceId;
+        }
 
-      container.appendChild(webcam.canvas);
-      isWebcamRunning = true;
-      window.requestAnimationFrame(webcamLoop);
+        const flipHorizontal = isFrontCamera(requestedDeviceId);
+        webcam = new tmImage.Webcam(340, 340, flipHorizontal);
+
+        const videoConstraints = requestedDeviceId
+          ? { deviceId: { exact: requestedDeviceId } }
+          : { facingMode: "environment" };
+
+        try {
+          await webcam.setup(videoConstraints);
+        } catch (e) {
+          // Fallback if exact device constraint is unavailable
+          await webcam.setup();
+        }
+
+        await webcam.play();
+
+        // Read actual active deviceId after permission is granted (unlocks full camera labels)
+        const track = webcam.webcam && webcam.webcam.srcObject
+          ? webcam.webcam.srcObject.getVideoTracks()[0]
+          : null;
+        const activeId = track && track.getSettings ? track.getSettings().deviceId : requestedDeviceId;
+        await refreshCameraList(activeId);
+
+        mediaSlot.innerHTML = "";
+        mediaSlot.appendChild(webcam.canvas);
+        viewport.classList.add("active");
+
+        isWebcamRunning = true;
+        webcamBtn.disabled = false;
+        webcamBtn.classList.add("stop-mode");
+        webcamBtnText.innerText = "Stop Camera";
+        setStatus("live", "Live Scan");
+
+        window.requestAnimationFrame(webcamLoop);
+      } catch (err) {
+        console.error(err);
+        webcamBtn.disabled = false;
+        webcamBtnText.innerText = "Live Camera";
+        setStatus("idle", "Camera Error");
+        setResultState("uncertain", "Permission Needed", "Allow camera access or upload a photo");
+      }
+    }
+
+    async function stopWebcam() {
+      isWebcamRunning = false;
+      if (webcam) {
+        await webcam.stop();
+        webcam = null;
+      }
+      webcamBtn.classList.remove("stop-mode");
+      webcamBtnText.innerText = "Live Camera";
+      setStatus("idle", "Paused");
+    }
+
+    async function onCameraSelected() {
+      selectedDeviceId = cameraSelect.value;
+      if (isWebcamRunning) {
+        await stopWebcam();
+        await startWebcam(selectedDeviceId);
+      }
+    }
+
+    async function cycleNextCamera() {
+      if (availableCameras.length < 2) return;
+      const currentIndex = availableCameras.findIndex(c => c.deviceId === selectedDeviceId);
+      const nextIndex = (currentIndex + 1) % availableCameras.length;
+      selectedDeviceId = availableCameras[nextIndex].deviceId;
+      cameraSelect.value = selectedDeviceId;
+
+      if (isWebcamRunning) {
+        await stopWebcam();
+        await startWebcam(selectedDeviceId);
+      }
     }
 
     async function webcamLoop() {
-      if (!isWebcamRunning) return;
+      if (!isWebcamRunning || !webcam) return;
       webcam.update();
       await classifyElement(webcam.canvas);
       window.requestAnimationFrame(webcamLoop);
     }
 
-    // 4. Photo upload mode
     async function handleImageUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      // Stop webcam if it was running
-      if (isWebcamRunning && webcam) {
-        isWebcamRunning = false;
-        await webcam.stop();
-        document.getElementById("webcam-btn").disabled = false;
+      if (isWebcamRunning) {
+        await stopWebcam();
       }
 
       await loadModel();
 
-      const container = document.getElementById("media-container");
-      container.innerHTML = "";
-
       const img = document.createElement("img");
       img.src = URL.createObjectURL(file);
       img.onload = async () => {
-        container.appendChild(img);
+        mediaSlot.innerHTML = "";
+        mediaSlot.appendChild(img);
+        viewport.classList.add("active");
+        setStatus("idle", "Photo Analyzed");
         await classifyElement(img);
+        URL.revokeObjectURL(img.src);
       };
+
+      event.target.value = "";
+    }
+
+    // Listen for USB/external cameras plugged in or unplugged while the page is open
+    if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
+      navigator.mediaDevices.addEventListener("devicechange", () => refreshCameraList(selectedDeviceId));
     }
   </script>
 
