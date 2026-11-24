@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fruit & Vegetable Identifier</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      background: #f4f6f8;
+      color: #1f2328;
+    }
+    .card {
+      background: white;
+      padding: 28px;
+      border-radius: 16px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      max-width: 400px;
+      width: 90%;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+    button, .upload-label {
+      padding: 10px 18px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background: #0969da;
+      color: white;
+      transition: background 0.2s;
+    }
+    button:hover, .upload-label:hover {
+      background: #0550ae;
+    }
+    button:disabled {
+      background: #8c959f;
+      cursor: not-allowed;
+    }
+    input[type="file"] {
+      display: none;
+    }
+    #media-container canvas, #media-container img {
+      width: 300px;
+      height: 300px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid #d0d7de;
+      margin-top: 8px;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1a7f37;
+      min-height: 2.4rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Produce Identifier</h2>
+
+    <div class="controls">
+      <button id="webcam-btn" onclick="startWebcam()">Use Webcam</button>
+      <label class="upload-label" for="image-upload">Upload Photo</label>
+      <input type="file" id="image-upload" accept="image/*" onchange="handleImageUpload(event)" />
+    </div>
+
+    <div id="media-container"></div>
+
+    <!-- Single output display -->
+    <div id="result">Ready</div>
+  </div>
+
+  <script>
+    const MODEL_BASE_URL = "https://teachablemachine.withgoogle.com/models/o5EEotCaj/";
+    const CONFIDENCE_THRESHOLD = 0.75; // Minimum 75% certainty to show a name
+
+    let model;
+    let webcam;
+    let isWebcamRunning = false;
+
+    // 1. Load the model once when needed
+    async function loadModel() {
+      if (!model) {
+        document.getElementById("result").innerText = "Loading model...";
+        model = await tmImage.load(
+          MODEL_BASE_URL + "model.json",
+          MODEL_BASE_URL + "metadata.json"
+        );
+      }
+    }
+
+    // 2. Helper that extracts ONLY the single top prediction
+    async function classifyElement(htmlElement) {
+      const predictions = await model.predict(htmlElement);
+
+      // Pick the single class with the highest probability
+      const topResult = predictions.reduce((best, current) =>
+        current.probability > best.probability ? current : best
+      );
+
+      const resultEl = document.getElementById("result");
+      if (topResult.probability >= CONFIDENCE_THRESHOLD) {
+        resultEl.innerText = topResult.className;
+      } else {
+        resultEl.innerText = "Not sure — try closer";
+      }
+    }
+
+    // 3. Webcam mode
+    async function startWebcam() {
+      const btn = document.getElementById("webcam-btn");
+      btn.disabled = true;
+
+      await loadModel();
+
+      const container = document.getElementById("media-container");
+      container.innerHTML = "";
+
+      webcam = new tmImage.Webcam(300, 300, true);
+      await webcam.setup();
+      await webcam.play();
+
+      container.appendChild(webcam.canvas);
+      isWebcamRunning = true;
+      window.requestAnimationFrame(webcamLoop);
+    }
+
+    async function webcamLoop() {
+      if (!isWebcamRunning) return;
+      webcam.update();
+      await classifyElement(webcam.canvas);
+      window.requestAnimationFrame(webcamLoop);
+    }
+
+    // 4. Photo upload mode
+    async function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      // Stop webcam if it was running
+      if (isWebcamRunning && webcam) {
+        isWebcamRunning = false;
+        await webcam.stop();
+        document.getElementById("webcam-btn").disabled = false;
+      }
+
+      await loadModel();
+
+      const container = document.getElementById("media-container");
+      container.innerHTML = "";
+
+      const img = document.createElement("img");
+      img.src = URL.createObjectURL(file);
+      img.onload = async () => {
+        container.appendChild(img);
+        await classifyElement(img);
+      };
+    }
+  </script>
+
+</body>
+</html>
