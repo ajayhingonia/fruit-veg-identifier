@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ProduceAI — Smart Fruit & Vegetable Classifier</title>
+  <title>Smart Produce Vision — PM SHRI Kendriya Vidyalaya Bakloh</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@500;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
   <style>
@@ -26,6 +26,9 @@
       --secondary-btn-hover: #1e293b;
       --warning-bg: #fef3c7;
       --warning-text: #92400e;
+      --school-badge-bg: #eff6ff;
+      --school-badge-border: #bfdbfe;
+      --school-badge-text: #1e40af;
       --shadow-lg: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
       --radius-xl: 24px;
       --radius-lg: 16px;
@@ -39,21 +42,81 @@
     }
 
     body {
-      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: 'Plus Jakarta Sans', 'Noto Sans Devanagari', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg-gradient);
       color: var(--text-primary);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 28px 16px 48px;
-      gap: 24px;
+      padding: 24px 16px 48px;
+      gap: 22px;
+    }
+
+    /* Institutional Header Banner */
+    .school-banner {
+      width: 100%;
+      max-width: 520px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .school-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .school-emblem {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--school-badge-bg);
+      border: 1px solid var(--school-badge-border);
+      color: var(--school-badge-text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .school-text h2 {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .school-text p {
+      font-size: 0.74rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 1px;
+    }
+
+    .class-tag {
+      background: var(--school-badge-bg);
+      border: 1px solid var(--school-badge-border);
+      color: var(--school-badge-text);
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
 
     /* Main Classifier Card */
     .app-shell {
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
@@ -65,14 +128,14 @@
       padding: 22px 26px 18px;
       border-bottom: 1px solid var(--border);
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
     }
 
     .brand {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       gap: 12px;
     }
 
@@ -86,19 +149,21 @@
       align-items: center;
       justify-content: center;
       flex-shrink: 0;
+      margin-top: 2px;
     }
 
     .brand-title h1 {
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       color: var(--text-primary);
+      line-height: 1.25;
     }
 
     .brand-title p {
       font-size: 0.78rem;
       color: var(--text-secondary);
-      margin-top: 2px;
+      margin-top: 3px;
     }
 
     .status-pill {
@@ -113,6 +178,7 @@
       color: var(--text-secondary);
       border: 1px solid var(--border);
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     .status-dot {
@@ -148,7 +214,7 @@
       position: relative;
       width: 100%;
       aspect-ratio: 1 / 1;
-      max-height: 330px;
+      max-height: 320px;
       background: var(--surface-muted);
       border: 2px dashed #cbd5e1;
       border-radius: var(--radius-lg);
@@ -206,7 +272,7 @@
       margin-top: 4px;
     }
 
-    /* Multi-Camera Picker Overlay & Bar */
+    /* Multi-Camera Picker Bar */
     .camera-bar {
       margin-top: 14px;
       display: none;
@@ -313,11 +379,11 @@
     }
 
     .result-value {
-      font-size: 1.85rem;
+      font-size: 1.75rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       color: var(--text-primary);
-      line-height: 1.2;
+      line-height: 1.25;
       word-break: break-word;
     }
 
@@ -326,9 +392,136 @@
     }
 
     .result-panel.uncertain .result-value {
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 700;
       color: var(--warning-text);
+    }
+
+    /* Dynamic Nutrition & Health Benefits Card */
+    .nutrition-card {
+      margin-top: 16px;
+      border-radius: var(--radius-lg);
+      background: #ffffff;
+      border: 1.5px solid #bbf7d0;
+      overflow: hidden;
+      display: none;
+      animation: fadeSlideIn 0.25s ease;
+    }
+
+    .nutrition-card.visible {
+      display: block;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .nutrition-header {
+      background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+      padding: 12px 16px;
+      border-bottom: 1px solid #bbf7d0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .nutrition-header h3 {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--accent-text);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .serving-tag {
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #15803d;
+      background: #ffffff;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid #bbf7d0;
+    }
+
+    .macro-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      padding: 14px 16px 10px;
+    }
+
+    .macro-box {
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 6px;
+      text-align: center;
+    }
+
+    .macro-val {
+      font-size: 0.88rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .macro-lbl {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    .nutrients-strip {
+      padding: 4px 16px 12px;
+      font-size: 0.78rem;
+      color: var(--text-secondary);
+    }
+
+    .nutrients-strip strong {
+      color: var(--text-primary);
+    }
+
+    .benefits-section {
+      padding: 12px 16px 16px;
+      border-top: 1px solid var(--border);
+      background: #fafaf9;
+    }
+
+    .benefits-section h4 {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--accent-text);
+      margin-bottom: 8px;
+    }
+
+    .benefits-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .benefits-list li {
+      font-size: 0.8rem;
+      line-height: 1.45;
+      color: var(--text-primary);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .benefits-list li::before {
+      content: "✓";
+      color: var(--accent);
+      font-weight: 800;
+      flex-shrink: 0;
     }
 
     /* Controls */
@@ -410,10 +603,10 @@
       to { transform: rotate(360deg); }
     }
 
-    /* Project Showcase Section */
+    /* Project Showcase & Supported Items Card */
     .about-card {
       width: 100%;
-      max-width: 480px;
+      max-width: 520px;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
@@ -436,7 +629,7 @@
     }
 
     .about-card h2 {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 800;
       letter-spacing: -0.02em;
       color: var(--text-primary);
@@ -444,33 +637,114 @@
     }
 
     .about-lead {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       line-height: 1.6;
       color: var(--text-secondary);
+      margin-bottom: 18px;
+    }
+
+    /* Team Attribution Card */
+    .team-box {
+      background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 100%);
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius-md);
+      padding: 15px 16px;
       margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .team-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #ffffff;
+      border: 1px solid #bfdbfe;
+      color: #1d4ed8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .team-details h3 {
+      font-size: 0.86rem;
+      font-weight: 800;
+      color: #1e3a8a;
+      margin-bottom: 3px;
+    }
+
+    .team-details p {
+      font-size: 0.79rem;
+      line-height: 1.5;
+      color: #1e40af;
+    }
+
+    .catalog-title {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+
+    .catalog-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .catalog-chip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 10px;
+      background: var(--surface-muted);
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .catalog-chip:hover {
+      background: var(--accent-soft);
+      border-color: #86efac;
+      color: var(--accent-text);
+    }
+
+    .catalog-chip span.hi {
+      font-size: 0.76rem;
+      color: var(--text-secondary);
+      font-weight: 500;
     }
 
     .feature-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 10px;
+      margin-bottom: 18px;
     }
 
     .feature-item {
       display: flex;
       align-items: flex-start;
       gap: 12px;
-      padding: 14px;
+      padding: 13px;
       border-radius: var(--radius-md);
       background: var(--surface-muted);
       border: 1px solid var(--border);
     }
 
     .feature-icon {
-      width: 34px;
-      height: 34px;
-      border-radius: 10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 9px;
       background: #ffffff;
       border: 1px solid var(--border);
       color: var(--accent);
@@ -481,15 +755,15 @@
     }
 
     .feature-text h3 {
-      font-size: 0.86rem;
+      font-size: 0.84rem;
       font-weight: 700;
       color: var(--text-primary);
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     .feature-text p {
-      font-size: 0.79rem;
-      line-height: 1.5;
+      font-size: 0.78rem;
+      line-height: 1.45;
       color: var(--text-secondary);
     }
 
@@ -501,31 +775,53 @@
     }
 
     .impact-box h4 {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.06em;
       color: var(--accent-text);
-      margin-bottom: 5px;
+      margin-bottom: 4px;
     }
 
     .impact-box p {
-      font-size: 0.81rem;
-      line-height: 1.55;
+      font-size: 0.8rem;
+      line-height: 1.5;
       color: #14532d;
     }
 
     .app-footer {
       text-align: center;
-      font-size: 0.75rem;
-      color: var(--text-muted);
+      font-size: 0.76rem;
+      line-height: 1.6;
+      color: var(--text-secondary);
       padding-top: 4px;
+    }
+
+    .app-footer strong {
+      color: var(--text-primary);
     }
   </style>
 </head>
 <body>
 
-  <!-- Interactive Classifier Card -->
+  <!-- Institutional Attribution Banner -->
+  <div class="school-banner">
+    <div class="school-info">
+      <div class="school-emblem" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <div class="school-text">
+        <h2>PM SHRI Kendriya Vidyalaya Bakloh</h2>
+        <p>Developed by Team of Class XI Students</p>
+      </div>
+    </div>
+    <span class="class-tag">Class XI AI Project</span>
+  </div>
+
+  <!-- Main Classifier Card -->
   <main class="app-shell">
     <header class="app-header">
       <div class="brand">
@@ -536,8 +832,8 @@
           </svg>
         </div>
         <div class="brand-title">
-          <h1>ProduceAI</h1>
-          <p>Smart Fruit &amp; Vegetable Classifier</p>
+          <h1>Smart Produce Vision</h1>
+          <p>AI-Based Fruit &amp; Vegetable Identification System</p>
         </div>
       </div>
 
@@ -563,7 +859,7 @@
         </div>
       </div>
 
-      <!-- Camera Selector Bar (Automatically shows when multiple cameras are detected) -->
+      <!-- Multi-Camera Selector Bar -->
       <div id="camera-bar" class="camera-bar">
         <label for="camera-select">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -584,10 +880,46 @@
         </button>
       </div>
 
-      <!-- Single Output Display -->
+      <!-- Single Bilingual Output Display -->
       <div id="result-panel" class="result-panel" aria-live="polite">
         <div id="result-label" class="result-label">Identified Produce</div>
         <div id="result-value" class="result-value">Ready to Scan</div>
+      </div>
+
+      <!-- Dynamic Nutrition Value & Health Benefits Panel -->
+      <div id="nutrition-card" class="nutrition-card" aria-live="polite">
+        <div class="nutrition-header">
+          <h3 id="nutrition-title">Nutrition &amp; Health Profile</h3>
+          <span class="serving-tag">Per 100g</span>
+        </div>
+
+        <div class="macro-grid">
+          <div class="macro-box">
+            <div class="macro-val" id="nut-calories">—</div>
+            <div class="macro-lbl">Calories</div>
+          </div>
+          <div class="macro-box">
+            <div class="macro-val" id="nut-carbs">—</div>
+            <div class="macro-lbl">Carbs</div>
+          </div>
+          <div class="macro-box">
+            <div class="macro-val" id="nut-fiber">—</div>
+            <div class="macro-lbl">Fiber</div>
+          </div>
+          <div class="macro-box">
+            <div class="macro-val" id="nut-protein">—</div>
+            <div class="macro-lbl">Protein</div>
+          </div>
+        </div>
+
+        <div class="nutrients-strip">
+          <strong>Key Vitamins &amp; Minerals:</strong> <span id="nut-vitamins">—</span>
+        </div>
+
+        <div class="benefits-section">
+          <h4>Health Benefits</h4>
+          <ul class="benefits-list" id="nut-benefits"></ul>
+        </div>
       </div>
 
       <div class="controls">
@@ -612,7 +944,7 @@
     </section>
   </main>
 
-  <!-- Project Overview & Exhibition Showcase Card -->
+  <!-- Project Overview & Supported Produce Catalog -->
   <section class="about-card" aria-labelledby="project-overview-heading">
     <div class="theme-badge">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -621,47 +953,53 @@
       AI for Better Life
     </div>
 
-    <h2 id="project-overview-heading">About ProduceAI</h2>
+    <h2 id="project-overview-heading">About Smart Produce Vision</h2>
     <p class="about-lead">
-      <strong>ProduceAI</strong> brings instant, private computer vision directly to any web browser. Powered by a custom-trained Convolutional Neural Network and <strong>TensorFlow.js</strong>, it identifies fresh fruits and vegetables in real time and delivers a single, decisive answer without overwhelming users with complex probability charts.
+      <strong>Smart Produce Vision</strong> is an AI-based fruit and vegetable identification system powered by <strong>TensorFlow.js</strong> and a custom Convolutional Neural Network. It delivers a single bilingual identification (English &amp; Hindi) alongside instant nutritional facts and health benefits—processed 100% locally in your browser.
     </p>
+
+    <!-- Student Team & Institution Attribution -->
+    <div class="team-box">
+      <div class="team-icon" aria-hidden="true">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      </div>
+      <div class="team-details">
+        <h3>Created by Team of Class XI Students</h3>
+        <p><strong>PM SHRI Kendriya Vidyalaya Bakloh</strong> &bull; Student Innovation Project under the sub-theme <em>Artificial Intelligence (AI) for Better Life</em>.</p>
+      </div>
+    </div>
+
+    <div class="catalog-title">Trained Produce Categories (Tap any item to preview nutrition)</div>
+    <div class="catalog-grid" id="catalog-grid"></div>
 
     <div class="feature-grid">
       <div class="feature-item">
         <div class="feature-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
         <div class="feature-text">
-          <h3>Single-Decision Output Engine</h3>
-          <p>Filters raw neural network probabilities through a 75% confidence threshold to display one clear, unambiguous name.</p>
+          <h3>Single-Decision Bilingual Output</h3>
+          <p>Filters neural network predictions above a 75% confidence threshold into one clear English &amp; Hindi result with instant nutrition insights.</p>
         </div>
       </div>
 
       <div class="feature-item">
         <div class="feature-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
             <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
           </svg>
         </div>
         <div class="feature-text">
           <h3>100% On-Device Edge AI</h3>
-          <p>All camera frames are processed locally inside your browser—zero images are uploaded to external servers, ensuring speed and privacy.</p>
-        </div>
-      </div>
-
-      <div class="feature-item">
-        <div class="feature-icon" aria-hidden="true">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
-            <path d="M12 18h.01"/>
-          </svg>
-        </div>
-        <div class="feature-text">
-          <h3>Multi-Camera &amp; Cross-Platform</h3>
-          <p>Automatically detects all connected webcams, rear lenses, and front cameras with instant one-tap switching.</p>
+          <p>Runs locally inside your phone or computer browser with multi-camera selection—zero images are ever uploaded to external servers.</p>
         </div>
       </div>
     </div>
@@ -669,24 +1007,212 @@
     <div class="impact-box">
       <h4>Real-World Impact</h4>
       <p>
-        Designed to accelerate smart retail self-checkouts, streamline post-harvest produce sorting, assist visually impaired shoppers, and serve as an interactive nutrition learning tool.
+        Built to assist smart grocery billing, post-harvest produce sorting, visually impaired shoppers, and interactive nutrition education in schools and homes.
       </p>
     </div>
   </section>
 
   <footer class="app-footer">
-    Built with TensorFlow.js &amp; Teachable Machine &bull; On-Device Computer Vision
+    Created by <strong>Team of Class XI Students</strong> &bull; <strong>PM SHRI Kendriya Vidyalaya Bakloh</strong><br />
+    Smart Produce Vision &bull; Powered by TensorFlow.js &amp; Teachable Machine
   </footer>
 
   <script>
     const MODEL_BASE_URL = "https://teachablemachine.withgoogle.com/models/zHRMGcNAm/";
     const CONFIDENCE_THRESHOLD = 0.75;
 
+    // Comprehensive Nutrition & Health Benefits Database (Per 100g)
+    const PRODUCE_DB = {
+      tomato: {
+        en: "Tomato",
+        hi: "टमाटर",
+        calories: "18 kcal",
+        carbs: "3.9 g",
+        fiber: "1.2 g",
+        protein: "0.9 g",
+        vitamins: "Lycopene, Vitamin C, Potassium, Vitamin K1",
+        benefits: [
+          "Rich in lycopene, a powerful antioxidant that supports heart health and protects cells from oxidative stress.",
+          "High Vitamin C and potassium levels help regulate blood pressure and boost daily immunity."
+        ]
+      },
+      potato: {
+        en: "Potato",
+        hi: "आलू",
+        calories: "77 kcal",
+        carbs: "17.5 g",
+        fiber: "2.2 g",
+        protein: "2.0 g",
+        vitamins: "Potassium, Vitamin C, Vitamin B6, Resistant Starch",
+        benefits: [
+          "Provides sustained complex carbohydrate energy and supports muscle and nerve function via high potassium.",
+          "Contains resistant starch that nourishes beneficial gut bacteria and promotes digestive health."
+        ]
+      },
+      ginger: {
+        en: "Ginger",
+        hi: "अदरक",
+        calories: "80 kcal",
+        carbs: "17.8 g",
+        fiber: "2.0 g",
+        protein: "1.8 g",
+        vitamins: "Gingerol, Vitamin B6, Magnesium, Potassium",
+        benefits: [
+          "Bioactive gingerol delivers strong anti-inflammatory and antioxidant effects that soothe sore throats and joint stiffness.",
+          "Accelerates gastric emptying to relieve indigestion, bloating, and nausea."
+        ]
+      },
+      garlic: {
+        en: "Garlic",
+        hi: "लहसुन",
+        calories: "149 kcal",
+        carbs: "33.1 g",
+        fiber: "2.1 g",
+        protein: "6.4 g",
+        vitamins: "Allicin, Manganese, Vitamin B6, Vitamin C, Selenium",
+        benefits: [
+          "Allicin compounds strengthen immune defense against seasonal colds and infections.",
+          "Helps reduce LDL cholesterol and supports healthy blood pressure and cardiovascular circulation."
+        ]
+      },
+      "green chilli": {
+        en: "Green Chilli",
+        hi: "हरी मिर्च",
+        calories: "40 kcal",
+        carbs: "8.8 g",
+        fiber: "1.5 g",
+        protein: "1.9 g",
+        vitamins: "Vitamin C (143 mg), Capsaicin, Vitamin A, Iron",
+        benefits: [
+          "Packed with more Vitamin C per 100g than citrus fruits, boosting skin collagen and immune resilience.",
+          "Capsaicin naturally stimulates metabolism and acts as an anti-inflammatory decongestant."
+        ]
+      },
+      apple: {
+        en: "Apple",
+        hi: "सेब",
+        calories: "52 kcal",
+        carbs: "13.8 g",
+        fiber: "2.4 g",
+        protein: "0.3 g",
+        vitamins: "Pectin Fiber, Vitamin C, Quercetin, Potassium",
+        benefits: [
+          "Soluble pectin fiber slows sugar absorption, supports healthy gut flora, and lowers cholesterol.",
+          "Polyphenol antioxidants like quercetin protect cardiovascular and brain health."
+        ]
+      },
+      guava: {
+        en: "Guava",
+        hi: "अमरूद",
+        calories: "68 kcal",
+        carbs: "14.3 g",
+        fiber: "5.4 g",
+        protein: "2.6 g",
+        vitamins: "Vitamin C (228 mg), Dietary Fiber, Lycopene, Potassium",
+        benefits: [
+          "One of the richest natural sources of Vitamin C—over 2.5x the daily requirement per 100g—for superior immunity.",
+          "High dietary fiber and low glycemic index aid digestion and help stabilize blood sugar levels."
+        ]
+      },
+      banana: {
+        en: "Banana",
+        hi: "केला",
+        calories: "89 kcal",
+        carbs: "22.8 g",
+        fiber: "2.6 g",
+        protein: "1.1 g",
+        vitamins: "Potassium (358 mg), Vitamin B6, Magnesium, Vitamin C",
+        benefits: [
+          "Provides instant, easily digestible natural energy ideal before or after physical activity.",
+          "High potassium and magnesium replenish electrolytes and support heart rhythm and muscle recovery."
+        ]
+      },
+      cabbage: {
+        en: "Cabbage",
+        hi: "पत्तागोभी",
+        calories: "25 kcal",
+        carbs: "5.8 g",
+        fiber: "2.5 g",
+        protein: "1.3 g",
+        vitamins: "Vitamin K (76 mcg), Vitamin C, Folate, Sulforaphane",
+        benefits: [
+          "Cruciferous antioxidants and sulforaphane help combat chronic inflammation and support cellular detoxification.",
+          "Rich in Vitamin K and insoluble fiber for strong bones and smooth digestive regularity."
+        ]
+      },
+      capsicum: {
+        en: "Capsicum",
+        hi: "शिमला मिर्च",
+        calories: "20 kcal",
+        carbs: "4.6 g",
+        fiber: "1.7 g",
+        protein: "0.9 g",
+        vitamins: "Vitamin C (80 mg), Vitamin A, Lutein, Vitamin B6",
+        benefits: [
+          "Contains lutein and zeaxanthin antioxidants that protect eye retina health against strain and aging.",
+          "Low-calorie source of Vitamin C and beta-carotene that boosts iron absorption and skin health."
+        ]
+      },
+      cauliflower: {
+        en: "Cauliflower",
+        hi: "फूलगोभी",
+        calories: "25 kcal",
+        carbs: "5.0 g",
+        fiber: "2.0 g",
+        protein: "1.9 g",
+        vitamins: "Vitamin C, Vitamin K, Choline, Folate",
+        benefits: [
+          "Rich in choline, an essential nutrient that supports memory, mood, and nervous system function.",
+          "High fiber and glucosinolate antioxidants promote gut health and natural liver detox pathways."
+        ]
+      },
+      lemon: {
+        en: "Lemon",
+        hi: "नींबू",
+        calories: "29 kcal",
+        carbs: "9.3 g",
+        fiber: "2.8 g",
+        protein: "1.1 g",
+        vitamins: "Vitamin C (53 mg), Citric Acid, Flavonoids, Potassium",
+        benefits: [
+          "Natural citric acid aids digestion, supports hydration, and helps prevent kidney stone formation.",
+          "Enhances plant-based iron absorption while strengthening immunity with citrus bioflavonoids."
+        ]
+      },
+      onion: {
+        en: "Onion",
+        hi: "प्याज़",
+        calories: "40 kcal",
+        carbs: "9.3 g",
+        fiber: "1.7 g",
+        protein: "1.1 g",
+        vitamins: "Quercetin, Prebiotic Inulin, Vitamin C, Vitamin B6",
+        benefits: [
+          "Prebiotic fibers (inulin and fructooligosaccharides) feed healthy gut bacteria and improve nutrient uptake.",
+          "High quercetin flavonoid content helps regulate blood pressure and reduce systemic inflammation."
+        ]
+      },
+      radish: {
+        en: "Radish",
+        hi: "मूली",
+        calories: "16 kcal",
+        carbs: "3.4 g",
+        fiber: "1.6 g",
+        protein: "0.7 g",
+        vitamins: "Vitamin C, Anthocyanins, Potassium, Folate",
+        benefits: [
+          "Over 95% water content with natural enzymes that cool the body, hydrate, and aid liver and gallbladder function.",
+          "Low-calorie fiber supports healthy digestion and helps maintain balanced blood glucose levels."
+        ]
+      }
+    };
+
     let model = null;
     let webcam = null;
     let isWebcamRunning = false;
     let availableCameras = [];
     let selectedDeviceId = "";
+    let lastDisplayedKey = "";
 
     const statusPill = document.getElementById("status-pill");
     const statusText = document.getElementById("status-text");
@@ -697,18 +1223,81 @@
     const resultPanel = document.getElementById("result-panel");
     const resultLabel = document.getElementById("result-label");
     const resultValue = document.getElementById("result-value");
+    const nutritionCard = document.getElementById("nutrition-card");
     const webcamBtn = document.getElementById("webcam-btn");
     const webcamBtnText = document.getElementById("webcam-btn-text");
+
+    (function renderCatalog() {
+      const grid = document.getElementById("catalog-grid");
+      Object.keys(PRODUCE_DB).forEach(key => {
+        const item = PRODUCE_DB[key];
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "catalog-chip";
+        chip.innerHTML = `<span>${item.en}</span><span class="hi">${item.hi}</span>`;
+        chip.onclick = () => {
+          displayProduceInfo(key, "Catalog Preview");
+          resultPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        };
+        grid.appendChild(chip);
+      });
+    })();
+
+    function findProduceEntry(rawClassName) {
+      if (!rawClassName) return null;
+      const cleaned = rawClassName.toLowerCase().trim();
+      if (PRODUCE_DB[cleaned]) return { key: cleaned, data: PRODUCE_DB[cleaned] };
+
+      for (const key of Object.keys(PRODUCE_DB)) {
+        if (cleaned.includes(key) || cleaned.includes(PRODUCE_DB[key].hi)) {
+          return { key, data: PRODUCE_DB[key] };
+        }
+      }
+      return null;
+    }
+
+    function displayProduceInfo(key, badgeLabel = "Identified Produce") {
+      const entry = PRODUCE_DB[key];
+      if (!entry) return;
+
+      resultPanel.className = "result-panel detected";
+      resultLabel.innerText = badgeLabel;
+      resultValue.innerText = `${entry.en} — ${entry.hi}`;
+
+      if (lastDisplayedKey !== key) {
+        lastDisplayedKey = key;
+        document.getElementById("nutrition-title").innerText = `${entry.en} (${entry.hi}) — Nutrition & Benefits`;
+        document.getElementById("nut-calories").innerText = entry.calories;
+        document.getElementById("nut-carbs").innerText = entry.carbs;
+        document.getElementById("nut-fiber").innerText = entry.fiber;
+        document.getElementById("nut-protein").innerText = entry.protein;
+        document.getElementById("nut-vitamins").innerText = entry.vitamins;
+
+        const benefitsList = document.getElementById("nut-benefits");
+        benefitsList.innerHTML = "";
+        entry.benefits.forEach(text => {
+          const li = document.createElement("li");
+          li.innerText = text;
+          benefitsList.appendChild(li);
+        });
+      }
+
+      nutritionCard.classList.add("visible");
+    }
 
     function setStatus(state, text) {
       statusPill.className = "status-pill" + (state === "live" ? " live" : "");
       statusText.innerText = text;
     }
 
-    function setResultState(mode, label, value) {
+    function setResultState(mode, label, value, hideNutrition = true) {
       resultPanel.className = "result-panel" + (mode ? " " + mode : "");
       resultLabel.innerText = label;
       resultValue.innerText = value;
+      if (hideNutrition) {
+        nutritionCard.classList.remove("visible");
+        lastDisplayedKey = "";
+      }
     }
 
     async function loadModel() {
@@ -739,7 +1328,6 @@
       if (activeDeviceId && availableCameras.some(c => c.deviceId === activeDeviceId)) {
         selectedDeviceId = activeDeviceId;
       } else if (!selectedDeviceId && availableCameras.length > 0) {
-        // Prefer rear/back camera on initial load if available
         const rearCam = availableCameras.find(c => /back|rear|environment/i.test(c.label));
         selectedDeviceId = rearCam ? rearCam.deviceId : availableCameras[0].deviceId;
       }
@@ -748,7 +1336,6 @@
         cameraSelect.value = selectedDeviceId;
       }
 
-      // Show camera selector bar whenever 2 or more cameras exist
       if (availableCameras.length > 1) {
         cameraBar.classList.add("visible");
       } else {
@@ -770,9 +1357,14 @@
       );
 
       if (topResult.probability >= CONFIDENCE_THRESHOLD) {
-        setResultState("detected", "Identified Produce", topResult.className);
+        const matched = findProduceEntry(topResult.className);
+        if (matched) {
+          displayProduceInfo(matched.key, "Identified Produce");
+        } else {
+          setResultState("detected", "Identified Produce", topResult.className, true);
+        }
       } else {
-        setResultState("uncertain", "Low Confidence", "Move closer or adjust lighting");
+        setResultState("uncertain", "Low Confidence", "Move closer or adjust lighting", true);
       }
     }
 
@@ -791,7 +1383,6 @@
       try {
         await loadModel();
 
-        // Populate camera list before starting if not yet loaded
         if (availableCameras.length === 0) {
           await refreshCameraList();
           requestedDeviceId = selectedDeviceId;
@@ -807,13 +1398,11 @@
         try {
           await webcam.setup(videoConstraints);
         } catch (e) {
-          // Fallback if exact device constraint is unavailable
           await webcam.setup();
         }
 
         await webcam.play();
 
-        // Read actual active deviceId after permission is granted (unlocks full camera labels)
         const track = webcam.webcam && webcam.webcam.srcObject
           ? webcam.webcam.srcObject.getVideoTracks()[0]
           : null;
@@ -836,7 +1425,7 @@
         webcamBtn.disabled = false;
         webcamBtnText.innerText = "Live Camera";
         setStatus("idle", "Camera Error");
-        setResultState("uncertain", "Permission Needed", "Allow camera access or upload a photo");
+        setResultState("uncertain", "Permission Needed", "Allow camera access or upload a photo", true);
       }
     }
 
@@ -903,7 +1492,6 @@
       event.target.value = "";
     }
 
-    // Listen for USB/external cameras plugged in or unplugged while the page is open
     if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) {
       navigator.mediaDevices.addEventListener("devicechange", () => refreshCameraList(selectedDeviceId));
     }
